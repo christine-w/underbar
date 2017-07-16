@@ -65,7 +65,7 @@
     // TIP: Here's an example of a function that needs to iterate, which we've
     // implemented for you. Instead of using a standard `for` loop, though,
     // it uses the iteration helper `each`, which you will need to write.
-    var result = -1;
+    let result = -1;
 
     _.each(array, function(item, index) {
       if (item === target && result === -1) {
@@ -78,7 +78,7 @@
 
   // Return all elements of an array that pass a truth test.
   _.filter = function(collection, test) {
-    var resultArray = [];
+    let resultArray = [];
 
     _.each(collection, function(item) {
       if (test(item)) {
@@ -100,7 +100,7 @@
 
   // Produce a duplicate-free version of the array.
   _.uniq = function(array) {
-    var uniques = {};
+    let uniques = {};
 
     _.each(array, function(item) {
       if (!uniques[item]) {
@@ -233,7 +233,7 @@
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
   _.extend = function(obj) {
-    var sourceObjects = Array.from(arguments).slice(1);
+    let sourceObjects = Array.from(arguments).slice(1);
     _.each(sourceObjects, function(object) {
       _.each(object, function(value, key) {
         obj[key] = value;
@@ -245,7 +245,7 @@
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
   _.defaults = function(obj) {
-    var sourceObjects = Array.from(arguments).slice(1);
+    let sourceObjects = Array.from(arguments).slice(1);
     _.each(sourceObjects, function(object) {
       _.each(object, function(value, key) {
         if (!(key in obj)) {
@@ -300,8 +300,8 @@
     var pastFunctionCalls = {};
 
     return function() {
-      var argsPassedString = JSON.stringify(Array.from(arguments));
-      var result;
+      let argsPassedString = JSON.stringify(Array.from(arguments));
+      let result;
 
       if (pastFunctionCalls[argsPassedString]) {
         result = pastFunctionCalls[argsPassedString];
@@ -320,7 +320,7 @@
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
   _.delay = function(func, wait) {
-    var args = Array.from(arguments).slice(2);
+    let args = Array.from(arguments).slice(2);
     if (args.length > 0) {
       func = func.apply(this, args);
     }
@@ -339,8 +339,8 @@
   // input array. For a tip on how to make a copy of an array, see:
   // http://mdn.io/Array.prototype.slice
   _.shuffle = function(array) {
-    var copy = array.slice(0);
-    var output = [];
+    let copy = array.slice(0);
+    let output = [];
     while (copy.length > 0) {
       output = output.concat(copy.splice(Math.floor(Math.random() * copy.length), 1));
     }
@@ -359,6 +359,12 @@
   // Calls the method named by functionOrKey on each value in the list.
   // Note: You will need to learn a bit about .apply to complete this.
   _.invoke = function(collection, functionOrKey, args) {
+    return _.map(collection, function(item) {
+      if (typeof functionOrKey !== 'function') {
+        return item[functionOrKey].apply(item, args);
+      }
+      return functionOrKey.apply(item, args);
+    });
   };
 
   // Sort the object's values by a criterion produced by an iterator.
@@ -366,6 +372,21 @@
   // of that string. For example, _.sortBy(people, 'name') should sort
   // an array of people by their name.
   _.sortBy = function(collection, iterator) {
+    if (typeof iterator === 'string') {
+      let name = iterator;
+      iterator = function(obj) {
+        return obj[name];
+      }
+    }
+    return collection.sort(function(a, b) {
+      if (iterator(a) < iterator(b)) {
+        return -1;
+      }
+      if (iterator(a) > iterator(b)) {
+        return 1;
+      }
+      return 0;
+    });
   };
 
   // Zip together two or more arrays with elements of the same index
@@ -374,13 +395,34 @@
   // Example:
   // _.zip(['a','b','c','d'], [1,2,3]) returns [['a',1], ['b',2], ['c',3], ['d',undefined]]
   _.zip = function() {
+    let zippedArray = [];
+    let args = Array.from(arguments);
+    let zippedArrayLength = _.reduce(args, function(max, arg) {
+      return Math.max(max, arg.length);
+    },0);
+
+    for (let i = 0; i < zippedArrayLength; i++) {
+      zippedArray.push([]);
+      for (let j = 0; j < args.length; j++) {
+        zippedArray[i].push(args[j][i]);
+      }
+    }
+    return zippedArray;
   };
 
   // Takes a multidimensional array and converts it to a one-dimensional array.
   // The new array should contain all elements of the multidimensional array.
   //
   // Hint: Use Array.isArray to check if something is an array
-  _.flatten = function(nestedArray, result) {
+  _.flatten = function(nestedArray, result = []) {
+    for (let i = 0; i < nestedArray.length; i++) {
+      if (!Array.isArray(nestedArray[i])) {
+        result.push(nestedArray[i]);
+      } else {
+        _.flatten(nestedArray[i], result);
+      }
+    }
+    return result;
   };
 
   // Takes an arbitrary number of arrays and produces an array that contains
