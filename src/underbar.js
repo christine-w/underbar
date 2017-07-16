@@ -104,7 +104,7 @@
 
     _.each(array, function(item) {
       if (!uniques[item]) {
-        uniques[item] = parseInt(item);
+        uniques[item] = item;
       }
     });
 
@@ -396,16 +396,16 @@
   // _.zip(['a','b','c','d'], [1,2,3]) returns [['a',1], ['b',2], ['c',3], ['d',undefined]]
   _.zip = function() {
     let zippedArray = [];
-    let args = Array.from(arguments);
-    let zippedArrayLength = _.reduce(args, function(max, arg) {
-      return Math.max(max, arg.length);
+    let arrays = Array.from(arguments);
+    let outputLength = _.reduce(arrays, function(max, array) {
+      return Math.max(max, arrays.length);
     },0);
 
-    for (let i = 0; i < zippedArrayLength; i++) {
+    for (let i = 0; i < outputLength; i++) {
       zippedArray.push([]);
-      for (let j = 0; j < args.length; j++) {
-        zippedArray[i].push(args[j][i]);
-      }
+      _.each(arrays, function(array) {
+        zippedArray[i].push(array[i]);
+      });
     }
     return zippedArray;
   };
@@ -428,11 +428,31 @@
   // Takes an arbitrary number of arrays and produces an array that contains
   // every item shared between all the passed-in arrays.
   _.intersection = function() {
+    let arrays = Array.from(arguments);
+    let uniqueElements = _.uniq(_.reduce(arrays, function(allElements, array) {
+      Array.prototype.push.apply(allElements, array);
+      return allElements;
+    },[]));
+
+    return _.filter(uniqueElements, function(element) {
+      return _.every(arrays, function(array) {
+        return _.contains(array, element);
+      });
+    });
   };
 
   // Take the difference between one array and a number of other arrays.
   // Only the elements present in just the first array will remain.
   _.difference = function(array) {
+    let otherArrays = Array.from(arguments).slice(1);
+    let otherArrayElements = _.uniq(_.reduce(otherArrays, function(allElements, array) {
+      Array.prototype.push.apply(allElements, array);
+      return allElements;
+    },[]));
+
+    return _.reject(array, function(element) {
+      return _.contains(otherArrayElements, element);
+    });
   };
 
   // Returns a function, that, when invoked, will only be triggered at most once
@@ -441,5 +461,13 @@
   //
   // Note: This is difficult! It may take a while to implement.
   _.throttle = function(func, wait) {
+    var lastRunAt = null;
+
+    return function() {
+      if (lastRunAt === null || Date.now() - lastRunAt > wait) {
+        func.apply(this, arguments);
+        lastRunAt = Date.now();
+      }
+    }
   };
 }());
