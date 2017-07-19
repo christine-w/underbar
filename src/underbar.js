@@ -78,7 +78,7 @@
 
   // Return all elements of an array that pass a truth test.
   _.filter = function(collection, test) {
-    let resultArray = [];
+    const resultArray = [];
 
     _.each(collection, function(item) {
       if (test(item)) {
@@ -100,7 +100,7 @@
 
   // Produce a duplicate-free version of the array.
   _.uniq = function(array) {
-    let uniques = {};
+    const uniques = {};
 
     _.each(array, function(item) {
       if (!uniques[item]) {
@@ -111,13 +111,12 @@
     return Object.values(uniques);
   };
 
-
   // Return the results of applying an iterator to each element.
   _.map = function(collection, iterator) {
     // map() is a useful primitive iteration function that works a lot
     // like each(), but in addition to running the operation on all
     // the members, it also maintains an array of results.
-    let resultArray = [];
+    const resultArray = [];
 
     _.each(collection, function(item) {
       resultArray.push(iterator(item));
@@ -166,7 +165,7 @@
   //          No accumulator is given so the first element is used.
   _.reduce = function(collection, iterator, accumulator) {
     _.each(collection, function(item, index) {
-      if (typeof accumulator == 'undefined' & index === 0) {
+      if (typeof accumulator === 'undefined' & index === 0) {
         accumulator = item;
       } else {
         accumulator = iterator(accumulator, item);
@@ -188,7 +187,6 @@
     }, false);
   };
 
-
   // Determine whether all of the elements match a truth test.
   _.every = function(collection, iterator) {
     // TIP: Try re-using reduce() here.
@@ -207,12 +205,11 @@
     if (typeof iterator === 'undefined') {
       iterator = function(item) { return Boolean(item); }
     }
-    var failTest = function(item) {
+    const failTest = function(item) {
       return !iterator(item);
     }
     return !_.every(collection, failTest);
   };
-
 
   /**
    * OBJECTS
@@ -233,7 +230,7 @@
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
   _.extend = function(obj) {
-    let sourceObjects = Array.from(arguments).slice(1);
+    const sourceObjects = Array.from(arguments).slice(1);
     _.each(sourceObjects, function(object) {
       _.each(object, function(value, key) {
         obj[key] = value;
@@ -245,7 +242,7 @@
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
   _.defaults = function(obj) {
-    let sourceObjects = Array.from(arguments).slice(1);
+    const sourceObjects = Array.from(arguments).slice(1);
     _.each(sourceObjects, function(object) {
       _.each(object, function(value, key) {
         if (!(key in obj)) {
@@ -255,7 +252,6 @@
     });
     return obj;
   };
-
 
   /**
    * FUNCTIONS
@@ -271,8 +267,8 @@
     // TIP: These variables are stored in a "closure scope" (worth researching),
     // so that they'll remain available to the newly-generated function every
     // time it's called.
-    var alreadyCalled = false;
-    var result;
+    let alreadyCalled = false;
+    let result;
 
     // TIP: We'll return a new function that delegates to the old one, but only
     // if it hasn't been called before.
@@ -297,13 +293,13 @@
   // already computed the result for the given argument and return that value
   // instead if possible.
   _.memoize = function(func) {
-    var pastFunctionCalls = {};
+    const pastFunctionCalls = {};
 
     return function() {
       let argsPassedString = JSON.stringify(Array.from(arguments));
       let result;
 
-      if (pastFunctionCalls[argsPassedString]) {
+      if (pastFunctionCalls.hasOwnProperty(argsPassedString)) {
         result = pastFunctionCalls[argsPassedString];
       } else {
         result = func.apply(this, arguments);
@@ -320,13 +316,12 @@
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
   _.delay = function(func, wait) {
-    let args = Array.from(arguments).slice(2);
+    const args = Array.from(arguments).slice(2);
     if (args.length > 0) {
       func = func.apply(this, args);
     }
     setTimeout(func, wait);
   };
-
 
   /**
    * ADVANCED COLLECTION OPERATIONS
@@ -340,13 +335,12 @@
   // http://mdn.io/Array.prototype.slice
   _.shuffle = function(array) {
     let copy = array.slice(0);
-    let output = [];
+    const output = [];
     while (copy.length > 0) {
-      output = output.concat(copy.splice(Math.floor(Math.random() * copy.length), 1));
+      output.push(...copy.splice(Math.floor(Math.random() * copy.length), 1));
     }
     return output;
   };
-
 
   /**
    * ADVANCED
@@ -395,10 +389,10 @@
   // Example:
   // _.zip(['a','b','c','d'], [1,2,3]) returns [['a',1], ['b',2], ['c',3], ['d',undefined]]
   _.zip = function() {
-    let zippedArray = [];
-    let arrays = Array.from(arguments);
-    let outputLength = _.reduce(arrays, function(max, array) {
-      return Math.max(max, arrays.length);
+    const zippedArray = [];
+    const arrays = Array.from(arguments);
+    const outputLength = _.reduce(arrays, function(maxLength, array) {
+      return Math.max(maxLength, arrays.length);
     },0);
 
     for (let i = 0; i < outputLength; i++) {
@@ -428,14 +422,11 @@
   // Takes an arbitrary number of arrays and produces an array that contains
   // every item shared between all the passed-in arrays.
   _.intersection = function() {
-    let arrays = Array.from(arguments);
-    let uniqueElements = _.uniq(_.reduce(arrays, function(allElements, array) {
-      Array.prototype.push.apply(allElements, array);
-      return allElements;
-    },[]));
+    const firstArrayUniqueElements = _.uniq(Array.from(arguments)[0]);
+    const otherArrays = Array.from(arguments).slice(1);
 
-    return _.filter(uniqueElements, function(element) {
-      return _.every(arrays, function(array) {
+    return _.filter(firstArrayUniqueElements, function(element) {
+      return _.every(otherArrays, function(array) {
         return _.contains(array, element);
       });
     });
@@ -444,8 +435,8 @@
   // Take the difference between one array and a number of other arrays.
   // Only the elements present in just the first array will remain.
   _.difference = function(array) {
-    let otherArrays = Array.from(arguments).slice(1);
-    let otherArrayElements = _.uniq(_.reduce(otherArrays, function(allElements, array) {
+    const otherArrays = Array.from(arguments).slice(1);
+    const otherArrayElements = _.uniq(_.reduce(otherArrays, function(allElements, array) {
       Array.prototype.push.apply(allElements, array);
       return allElements;
     },[]));
@@ -461,7 +452,7 @@
   //
   // Note: This is difficult! It may take a while to implement.
   _.throttle = function(func, wait) {
-    var lastRunAt = null;
+    let lastRunAt = null;
 
     return function() {
       if (lastRunAt === null || Date.now() - lastRunAt > wait) {
