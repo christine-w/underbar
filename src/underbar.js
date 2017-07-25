@@ -103,7 +103,7 @@
     const uniques = {};
 
     _.each(array, function(item) {
-      if (!uniques[item]) {
+      if (!uniques.hasOwnProperty(item)) {
         uniques[item] = item;
       }
     });
@@ -190,8 +190,8 @@
   // Determine whether all of the elements match a truth test.
   _.every = function(collection, iterator) {
     // TIP: Try re-using reduce() here.
-    return _.reduce(collection, function(allMatch, item) {
-      if (!allMatch) {
+    return _.reduce(collection, function(allTrue, item) {
+      if (!allTrue) {
         return false;
       }
       return iterator ? Boolean(iterator(item)) : Boolean(item);
@@ -203,12 +203,14 @@
   _.some = function(collection, iterator) {
     // TIP: There's a very clever way to re-use every() here.
     if (typeof iterator === 'undefined') {
-      iterator = function(item) { return Boolean(item); }
+      iterator = function(item) {
+        return Boolean(item);
+      }
     }
-    const failTest = function(item) {
+
+    return !_.every(collection, function(item) {
       return !iterator(item);
-    }
-    return !_.every(collection, failTest);
+    });
   };
 
   /**
@@ -236,6 +238,7 @@
         obj[key] = value;
       });
     });
+
     return obj;
   };
 
@@ -250,6 +253,7 @@
         }
       });
     });
+
     return obj;
   };
 
@@ -296,7 +300,7 @@
     const pastFunctionCalls = {};
 
     return function() {
-      let argsPassedString = JSON.stringify(Array.from(arguments));
+      const argsPassedString = JSON.stringify(Array.from(arguments));
       let result;
 
       if (pastFunctionCalls.hasOwnProperty(argsPassedString)) {
@@ -339,6 +343,7 @@
     while (copy.length > 0) {
       output.push(...copy.splice(Math.floor(Math.random() * copy.length), 1));
     }
+
     return output;
   };
 
@@ -367,11 +372,12 @@
   // an array of people by their name.
   _.sortBy = function(collection, iterator) {
     if (typeof iterator === 'string') {
-      let name = iterator;
+      const name = iterator;
       iterator = function(obj) {
         return obj[name];
       }
     }
+
     return collection.sort(function(a, b) {
       if (iterator(a) < iterator(b)) {
         return -1;
@@ -401,6 +407,7 @@
         zippedArray[i].push(array[i]);
       });
     }
+
     return zippedArray;
   };
 
@@ -416,6 +423,7 @@
         _.flatten(nestedArray[i], result);
       }
     }
+    
     return result;
   };
 
@@ -437,8 +445,7 @@
   _.difference = function(array) {
     const otherArrays = Array.from(arguments).slice(1);
     const otherArrayElements = _.uniq(_.reduce(otherArrays, function(allElements, array) {
-      Array.prototype.push.apply(allElements, array);
-      return allElements;
+      return allElements.concat(array);
     },[]));
 
     return _.reject(array, function(element) {
