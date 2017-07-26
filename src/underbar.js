@@ -53,7 +53,7 @@
         iterator(collection[i], i, collection);
       }
     } else {
-      for (let key in collection) {
+      for (const key in collection) {
         iterator(collection[key], key, collection);
       }
     }
@@ -67,7 +67,7 @@
     // it uses the iteration helper `each`, which you will need to write.
     let result = -1;
 
-    _.each(array, function(item, index) {
+    _.each(array, (item, index) => {
       if (item === target && result === -1) {
         result = index;
       }
@@ -80,7 +80,7 @@
   _.filter = function(collection, test) {
     const resultArray = [];
 
-    _.each(collection, function(item) {
+    _.each(collection, item => {
       if (test(item)) {
         resultArray.push(item);
       }
@@ -93,22 +93,23 @@
   _.reject = function(collection, test) {
     // TIP: see if you can re-use _.filter() here, without simply
     // copying code in and modifying it
-    return _.filter(collection, function(item) {
-      return !test(item);
-    });
+    return _.filter(collection, item => !test(item));
   };
 
   // Produce a duplicate-free version of the array.
   _.uniq = function(array) {
-    const uniques = {};
+    const set = new Set();
+    const uniques = [];
 
-    _.each(array, function(item) {
-      if (!uniques.hasOwnProperty(item)) {
-        uniques[item] = item;
-      }
+    _.each(array, item => {
+      set.add(item);
     });
 
-    return Object.values(uniques);
+    set.forEach(item => {
+      uniques.push(item);
+    });
+
+    return uniques;
   };
 
   // Return the results of applying an iterator to each element.
@@ -118,7 +119,7 @@
     // the members, it also maintains an array of results.
     const resultArray = [];
 
-    _.each(collection, function(item) {
+    _.each(collection, item => {
       resultArray.push(iterator(item));
     });
 
@@ -138,9 +139,7 @@
     // TIP: map is really handy when you want to transform an array of
     // values into a new array of values. _.pluck() is solved for you
     // as an example of this.
-    return _.map(collection, function(item){
-      return item[key];
-    });
+    return _.map(collection, item => item[key]);
   };
 
   // Reduces an array or object to a single value by repetitively calling
@@ -164,7 +163,7 @@
   //   }); // should be 5, regardless of the iterator function passed in
   //          No accumulator is given so the first element is used.
   _.reduce = function(collection, iterator, accumulator) {
-    _.each(collection, function(item, index) {
+    _.each(collection, (item, index) => {
       if (typeof accumulator === 'undefined' & index === 0) {
         accumulator = item;
       } else {
@@ -179,18 +178,13 @@
   _.contains = function(collection, target) {
     // TIP: Many iteration problems can be most easily expressed in
     // terms of reduce(). Here's a freebie to demonstrate!
-    return _.reduce(collection, function(wasFound, item) {
-      if (wasFound) {
-        return true;
-      }
-      return item === target;
-    }, false);
+    return _.reduce(collection, (wasFound, item) => wasFound ? true : item === target, false);
   };
 
   // Determine whether all of the elements match a truth test.
   _.every = function(collection, iterator) {
     // TIP: Try re-using reduce() here.
-    return _.reduce(collection, function(allTrue, item) {
+    return _.reduce(collection, (allTrue, item) => {
       if (!allTrue) {
         return false;
       }
@@ -208,9 +202,7 @@
       }
     }
 
-    return !_.every(collection, function(item) {
-      return !iterator(item);
-    });
+    return !_.every(collection, item => !iterator(item));
   };
 
   /**
@@ -233,8 +225,8 @@
   //   }); // obj1 now contains key1, key2, key3 and bla
   _.extend = function(obj) {
     const sourceObjects = Array.from(arguments).slice(1);
-    _.each(sourceObjects, function(object) {
-      _.each(object, function(value, key) {
+    _.each(sourceObjects, object => {
+      _.each(object, (value, key) => {
         obj[key] = value;
       });
     });
@@ -246,8 +238,8 @@
   // exists in obj
   _.defaults = function(obj) {
     const sourceObjects = Array.from(arguments).slice(1);
-    _.each(sourceObjects, function(object) {
-      _.each(object, function(value, key) {
+    _.each(sourceObjects, object => {
+      _.each(object, (value, key) => {
         if (!(key in obj)) {
           obj[key] = value;
         }
@@ -358,7 +350,7 @@
   // Calls the method named by functionOrKey on each value in the list.
   // Note: You will need to learn a bit about .apply to complete this.
   _.invoke = function(collection, functionOrKey, args) {
-    return _.map(collection, function(item) {
+    return _.map(collection, item => {
       if (typeof functionOrKey !== 'function') {
         return item[functionOrKey].apply(item, args);
       }
@@ -378,7 +370,7 @@
       }
     }
 
-    return collection.sort(function(a, b) {
+    return collection.sort((a, b) => {
       if (iterator(a) < iterator(b)) {
         return -1;
       }
@@ -397,13 +389,11 @@
   _.zip = function() {
     const zippedArray = [];
     const arrays = Array.from(arguments);
-    const outputLength = _.reduce(arrays, function(maxLength, array) {
-      return Math.max(maxLength, arrays.length);
-    },0);
+    const outputLength = _.reduce(arrays, (maxLength, array) => Math.max(maxLength, arrays.length), 0);
 
     for (let i = 0; i < outputLength; i++) {
       zippedArray.push([]);
-      _.each(arrays, function(array) {
+      _.each(arrays, array => {
         zippedArray[i].push(array[i]);
       });
     }
@@ -416,14 +406,14 @@
   //
   // Hint: Use Array.isArray to check if something is an array
   _.flatten = function(nestedArray, result = []) {
-    for (let i = 0; i < nestedArray.length; i++) {
-      if (!Array.isArray(nestedArray[i])) {
-        result.push(nestedArray[i]);
+    _.each(nestedArray, element => {
+      if (!Array.isArray(element)) {
+        result.push(element);
       } else {
-        _.flatten(nestedArray[i], result);
+        _.flatten(element, result);
       }
-    }
-    
+    });
+
     return result;
   };
 
@@ -433,24 +423,18 @@
     const firstArrayUniqueElements = _.uniq(Array.from(arguments)[0]);
     const otherArrays = Array.from(arguments).slice(1);
 
-    return _.filter(firstArrayUniqueElements, function(element) {
-      return _.every(otherArrays, function(array) {
-        return _.contains(array, element);
-      });
-    });
+    return _.filter(firstArrayUniqueElements, element =>
+      _.every(otherArrays, array =>
+        _.contains(array, element)));
   };
 
   // Take the difference between one array and a number of other arrays.
   // Only the elements present in just the first array will remain.
   _.difference = function(array) {
     const otherArrays = Array.from(arguments).slice(1);
-    const otherArrayElements = _.uniq(_.reduce(otherArrays, function(allElements, array) {
-      return allElements.concat(array);
-    },[]));
+    const otherArrayElements = _.uniq(_.reduce(otherArrays, (allElements, array) => allElements.concat(array),[]));
 
-    return _.reject(array, function(element) {
-      return _.contains(otherArrayElements, element);
-    });
+    return _.reject(array, element => _.contains(otherArrayElements, element));
   };
 
   // Returns a function, that, when invoked, will only be triggered at most once
